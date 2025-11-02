@@ -1,0 +1,93 @@
+
+.signup-page{ background: linear-gradient(180deg,#071025 0%, #0f1724 100%); color: #0f1724; }
+
+.signup-card{ border-radius:12px; overflow:hidden; }
+
+.signup-side{
+  background: linear-gradient(135deg, rgba(124,58,237,0.95), rgba(79,70,229,0.95));
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:2rem;
+  min-height:260px;
+}
+.side-content{ max-width:220px; text-align:left; }
+.side-content h2{ font-weight:700; margin-bottom:8px; }
+.side-content p{ opacity:0.95; }
+
+.side-illustration{
+  margin-top:18px;
+  width:100%;
+  height:120px;
+  border-radius:8px;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.14), transparent 20%),
+              linear-gradient(90deg, rgba(255,255,255,0.06), rgba(0,0,0,0.06));
+  box-shadow: inset 0 6px 20px rgba(0,0,0,0.12);
+}
+
+
+.social-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  border-radius:8px;
+}
+
+@media (max-width:767px){
+  .signup-side{ display:none; }
+  .signup-card{ border-radius:10px; }
+}
+.form-control:focus{
+  box-shadow:0 0 0 0.2rem rgba(124,58,237,0.25);
+  border-color:#7c3aed;
+}
+.btn-primary{
+  background-color:#7c3aed;
+  border-color:#7c3aed;
+}
+.btn-primary:hover{
+  background-color:#6d28d9;
+  border-color:#6d28d9;
+}
+.btn-primary:focus{
+  box-shadow:0 0 0 0.2rem rgba(124,58,237,0.5);
+}
+.btn-primary:active{
+  background-color:#5b21b6;
+  border-color:#5b21b6;
+}
+.btn-primary:disabled{
+  background-color:#a78bfa;
+  border-color:#a78bfa;
+}
+.text-link{
+  color:#7c3aed;
+  text-decoration:none;
+}
+.text-link:hover{
+  text-decoration:underline;
+}
+.text-link:focus{
+  outline:none;
+  box-shadow:0 0 0 0.2rem rgba(124,58,237,0.5);
+}
+.text-link:active{
+  color:#6d28d9;
+}
+.text-link:disabled{
+  color:#d8b4fe;
+}
+.form-label{ font-weight:600; }
+.input-group-text{
+  background-color:#f3f4f6;
+  border-color:#d1d5db;
+}
+.input-group-text:hover{
+  background-color:#e5e7eb;
+}
+.input-group-text:focus{
+  box-shadow:0 0 0 0.2rem rgba(124,58,237,0.25);
+  border-color:#7c3aed;
+}
