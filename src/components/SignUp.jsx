@@ -63,7 +63,7 @@ export default function SignUp() {
         <Col md={10} lg={8}>
           <Card className="signup-card shadow-sm overflow-hidden">
             <Row className="g-0">
-              {/* Left Side Section */}
+              
               <Col md={5} className="signup-side">
                 <div className="side-content">
                   <h2>Welcome</h2>
@@ -72,17 +72,17 @@ export default function SignUp() {
                 </div>
               </Col>
 
-              {/* Right Side Form */}
+              
               <Col md={7} className="p-4">
                 <h3 className="mb-3">Create account</h3>
 
                 <Form noValidate onSubmit={onSubmit}>
-                  {/* Firebase error message */}
+                  
                   {firebaseError && (
                     <div className="text-danger mb-3">{firebaseError}</div>
                   )}
 
-                  {/* Email */}
+                  
                   <Form.Group className="mb-3" controlId="email">
                     <Form.Label>Email</Form.Label>
                     <Form.Control
@@ -98,7 +98,7 @@ export default function SignUp() {
                     </Form.Control.Feedback>
                   </Form.Group>
 
-                  {/* Password */}
+                  
                   <Form.Group className="mb-3" controlId="password">
                     <Form.Label>Password</Form.Label>
                     <Form.Control
@@ -114,7 +114,7 @@ export default function SignUp() {
                     </Form.Control.Feedback>
                   </Form.Group>
 
-                  {/* Confirm Password */}
+                  
                   <Form.Group className="mb-3" controlId="confirm">
                     <Form.Label>Confirm Password</Form.Label>
                     <Form.Control
@@ -130,7 +130,7 @@ export default function SignUp() {
                     </Form.Control.Feedback>
                   </Form.Group>
 
-                  {/* Checkbox */}
+                  
                   <Form.Group className="mb-3" controlId="agree">
                     <InputGroup>
                       <Form.Check
@@ -145,7 +145,7 @@ export default function SignUp() {
                     <div className="text-danger small mt-1">{errors.agree}</div>
                   </Form.Group>
 
-                  {/* Submit Button */}
+                  
                   <div className="d-grid">
                     <Button type="submit" variant="primary" size="lg">
                       Create account
