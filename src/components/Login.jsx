@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../configure/firebase";
-import "../style/SignUp.css"; 
-import { Link } from "react-router-dom";
+import "../style/SignUp.css";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [form, setForm] = useState({
@@ -10,18 +10,19 @@ export default function Login() {
     password: "",
   });
   const [error, setError] = useState("");
-  const [loggedIn, setLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
 
-    
     if (!form.email || !form.password) {
       setError("Email and password are required");
       return;
@@ -35,26 +36,25 @@ export default function Login() {
         form.password
       );
 
-    
+      
       const token = await userCredential.user.getIdToken();
-      localStorage.setItem("authToken", token);
+      const userEmail = userCredential.user.email;
 
-      console.log("User logged in successfully:", userCredential.user.email);
-      setLoggedIn(true);
+      
+      localStorage.setItem("authToken", token);
+      localStorage.setItem("userEmail", userEmail);
+
+      console.log("✅ User logged in successfully:", userEmail);
+      
+
+      
+      navigate("/mailbox");
     } catch (err) {
       console.error("Login error:", err.message);
-      alert("Invalid email or password. Please try again.");
       setError("Invalid credentials");
+      alert("Invalid email or password. Please try again.");
     }
   };
-
-  if (loggedIn) {
-    return (
-      <div className="welcome-screen">
-        <h2>Welcome to your mail box</h2>
-      </div>
-    );
-  }
 
   return (
     <div className="signup-page d-flex align-items-center justify-content-center min-vh-100">
@@ -100,9 +100,10 @@ export default function Login() {
             </button>
           </div>
 
+        
           <div className="text-center mt-3">
             <small className="text-muted">
-              Don't have an account? <Link to="/signup">Sign up</Link>
+              Don’t have an account? <Link to="/">Sign up</Link>
             </small>
           </div>
         </form>

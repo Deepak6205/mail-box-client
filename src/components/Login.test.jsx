@@ -73,7 +73,7 @@ describe("Login Component", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: /login/i }));
 
-    // Since Firebase call is mocked/skipped, we just check no validation errors
+    
     expect(screen.queryByText(/invalid/i)).not.toBeInTheDocument();
   });
 });
