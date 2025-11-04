@@ -1,17 +1,26 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignUp from "./components/SignUp";
 import Login from "./components/Login";
+import Inbox from "./components/Inbox"; // ✅ Use Inbox instead of ComposeMail
 import ComposeMail from "./components/ComposeMail";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
+    <>
+    
     <Router>
       <Routes>
         <Route path="/" element={<SignUp />} />
         <Route path="/signin" element={<Login />} />
-        <Route path="/mailbox" element={<ComposeMail />} /> 
+
+        <Route path="/mailbox" element={<Inbox />} />
+        <Route path="/compose" element={<ComposeMail />} />
       </Routes>
     </Router>
+    <ToastContainer position="top-right" autoClose={3000} />
+    </>
   );
 }
 

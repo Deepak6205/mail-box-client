@@ -1,41 +1,42 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
+import { toast } from "react-toastify";
 
 export default function ComposeMail() {
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const sendMailHandler = async () => {
     if (!to || !subject || !message) {
-      alert("Please fill all fields before sending!");
+      toast.error("Please fill all fields before sending!");
       return;
     }
 
     const senderEmail = localStorage.getItem("userEmail");
     if (!senderEmail) {
-      alert("No sender email found! Please log in again.");
+      toast.error("No sender email found! Please log in again.");
       return;
     }
 
     setLoading(true);
 
-    
     const cleanSenderEmail = senderEmail.replace(/\./g, "_");
     const cleanReceiverEmail = to.replace(/\./g, "_");
 
     const mailData = {
       from: senderEmail,
-      to: to,
-      subject: subject,
-      message: message,
+      to,
+      subject,
+      message,
       timestamp: new Date().toISOString(),
     };
 
     try {
-      
       await fetch(
         `https://mail-box-client-59016-default-rtdb.firebaseio.com/mails/${cleanSenderEmail}/sent.json`,
         {
@@ -54,12 +55,16 @@ export default function ComposeMail() {
         }
       );
 
+      toast.success("✅ Mail sent successfully!");
+
       setTo("");
       setSubject("");
       setMessage("");
+
+      setTimeout(() => navigate("/mailbox"), 1000);
     } catch (error) {
       console.error("Error sending mail:", error);
-      alert("Failed to send mail. Try again later.");
+      toast.error("❌ Failed to send mail. Try again later.");
     }
 
     setLoading(false);
