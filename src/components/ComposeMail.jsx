@@ -28,7 +28,7 @@ export default function ComposeMail() {
     const cleanSenderEmail = senderEmail.replace(/\./g, "_");
     const cleanReceiverEmail = to.replace(/\./g, "_");
 
-    const mailData = {
+    const baseMailData = {
       from: senderEmail,
       to,
       subject,
@@ -37,20 +37,24 @@ export default function ComposeMail() {
     };
 
     try {
+      
+      const mailDataForSender = { ...baseMailData, read: true };
       await fetch(
         `https://mail-box-client-59016-default-rtdb.firebaseio.com/mails/${cleanSenderEmail}/sent.json`,
         {
           method: "POST",
-          body: JSON.stringify(mailData),
+          body: JSON.stringify(mailDataForSender),
           headers: { "Content-Type": "application/json" },
         }
       );
 
+      
+      const mailDataForReceiver = { ...baseMailData, read: false };
       await fetch(
         `https://mail-box-client-59016-default-rtdb.firebaseio.com/mails/${cleanReceiverEmail}/inbox.json`,
         {
           method: "POST",
-          body: JSON.stringify(mailData),
+          body: JSON.stringify(mailDataForReceiver),
           headers: { "Content-Type": "application/json" },
         }
       );
