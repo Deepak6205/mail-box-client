@@ -1,4 +1,4 @@
-/* Sent view styles */
+
 .sent-container {
   min-height: 100vh;
   background: linear-gradient(180deg, #f6f9fc 0%, #f8f9fa 100%);
@@ -70,7 +70,6 @@
   height: auto;
 }
 
-/* Responsive tweaks */
 @media (max-width: 767px) {
   .mail-meta {
     display: none;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button, Spinner } from "react-bootstrap";
+import { toast } from "react-toastify";
 import "./Inbox.css";
 
 export default function Inbox() {
@@ -9,6 +10,7 @@ export default function Inbox() {
   const [loading, setLoading] = useState(true);
   const [selectedMail, setSelectedMail] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,7 +105,39 @@ export default function Inbox() {
         setSelectedMail((prev) => (prev ? { ...prev, read: true } : prev));
       } catch (err) {
         console.error("Failed to mark message read:", err);
+        toast.error("Failed to mark message read.");
       }
+    }
+  };
+
+  
+  const deleteInboxMail = async (mailId) => {
+    if (!window.confirm("Delete this message? This cannot be undone.")) return;
+    const userEmail = localStorage.getItem("userEmail");
+    if (!userEmail) {
+      toast.error("Please login first.");
+      return;
+    }
+    const cleanEmail = userEmail.replace(/\./g, "_");
+    try {
+      setDeletingId(mailId);
+      const res = await fetch(
+        `https://mail-box-client-59016-default-rtdb.firebaseio.com/mails/${cleanEmail}/inbox/${mailId}.json`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) throw new Error("Delete failed");
+      setInboxEmails((prev) => prev.filter((m) => m.id !== mailId));
+      
+      if (selectedMail?.id === mailId) {
+        setShowModal(false);
+        setSelectedMail(null);
+      }
+      toast.success("Message deleted.");
+    } catch (err) {
+      console.error("Delete inbox error:", err);
+      toast.error("Failed to delete message.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -194,7 +228,20 @@ export default function Inbox() {
                   </div>
 
                   <div className="mail-right">
-                    <time className="timestamp">{mail.timestamp ? new Date(mail.timestamp).toLocaleString() : ""}</time>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
+                      <time className="timestamp">{mail.timestamp ? new Date(mail.timestamp).toLocaleString() : ""}</time>
+                      <button
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteInboxMail(mail.id);
+                        }}
+                        disabled={deletingId === mail.id}
+                        title="Delete"
+                      >
+                        {deletingId === mail.id ? <Spinner as="span" animation="border" size="sm" /> : "🗑"}
+                      </button>
+                    </div>
                   </div>
                 </article>
               ))}
@@ -218,6 +265,16 @@ export default function Inbox() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={closeModal}>Close</Button>
+          <Button
+            variant="danger"
+            onClick={async () => {
+              if (!selectedMail) return;
+              await deleteInboxMail(selectedMail.id);
+            }}
+            disabled={deletingId === selectedMail?.id}
+          >
+            {deletingId === selectedMail?.id ? <Spinner as="span" animation="border" size="sm" /> : "Delete"}
+          </Button>
         </Modal.Footer>
       </Modal>
     </div>

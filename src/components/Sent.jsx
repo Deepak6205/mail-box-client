@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button, Spinner } from "react-bootstrap";
+import { toast } from "react-toastify";
 import "./Sent.css";
 
 export default function Sent() {
@@ -8,6 +9,7 @@ export default function Sent() {
   const [loading, setLoading] = useState(true);
   const [selectedMail, setSelectedMail] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,6 +54,36 @@ export default function Sent() {
   const closeModal = () => {
     setShowModal(false);
     setSelectedMail(null);
+  };
+
+ 
+  const deleteSentMail = async (mailId) => {
+    if (!window.confirm("Delete this sent message? This cannot be undone.")) return;
+    const userEmail = localStorage.getItem("userEmail");
+    if (!userEmail) {
+      toast.error("Please login first.");
+      return;
+    }
+    const cleanEmail = userEmail.replace(/\./g, "_");
+    try {
+      setDeletingId(mailId);
+      const res = await fetch(
+        `https://mail-box-client-59016-default-rtdb.firebaseio.com/mails/${cleanEmail}/sent/${mailId}.json`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) throw new Error("Delete failed");
+      setSentEmails((prev) => prev.filter((m) => m.id !== mailId));
+      if (selectedMail?.id === mailId) {
+        setShowModal(false);
+        setSelectedMail(null);
+      }
+      toast.success("Sent message deleted.");
+    } catch (err) {
+      console.error("Delete sent error:", err);
+      toast.error("Failed to delete sent message.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -102,6 +134,19 @@ export default function Sent() {
                       <div className="small">
                         {mail.timestamp ? new Date(mail.timestamp).toLocaleString() : ""}
                       </div>
+                      <div style={{ marginTop: 6 }}>
+                        <button
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteSentMail(mail.id);
+                          }}
+                          disabled={deletingId === mail.id}
+                          title="Delete"
+                        >
+                          {deletingId === mail.id ? <Spinner as="span" animation="border" size="sm" /> : "🗑"}
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -133,6 +178,16 @@ export default function Sent() {
         <Modal.Footer>
           <Button variant="secondary" onClick={closeModal}>
             Close
+          </Button>
+          <Button
+            variant="danger"
+            onClick={async () => {
+              if (!selectedMail) return;
+              await deleteSentMail(selectedMail.id);
+            }}
+            disabled={deletingId === selectedMail?.id}
+          >
+            {deletingId === selectedMail?.id ? <Spinner as="span" animation="border" size="sm" /> : "Delete"}
           </Button>
         </Modal.Footer>
       </Modal>
