@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { toast } from "react-toastify";
+import { sendMail } from "../hooks/useMailApi";
 
 export default function ComposeMail() {
   const [to, setTo] = useState("");
@@ -17,61 +18,23 @@ export default function ComposeMail() {
       return;
     }
 
-    const senderEmail = localStorage.getItem("userEmail");
-    if (!senderEmail) {
-      toast.error("No sender email found! Please log in again.");
-      return;
-    }
-
     setLoading(true);
 
-    const cleanSenderEmail = senderEmail.replace(/\./g, "_");
-    const cleanReceiverEmail = to.replace(/\./g, "_");
-
-    const baseMailData = {
-      from: senderEmail,
-      to,
-      subject,
-      message,
-      timestamp: new Date().toISOString(),
-    };
-
     try {
-      
-      const mailDataForSender = { ...baseMailData, read: true };
-      await fetch(
-        `https://mail-box-client-59016-default-rtdb.firebaseio.com/mails/${cleanSenderEmail}/sent.json`,
-        {
-          method: "POST",
-          body: JSON.stringify(mailDataForSender),
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      
-      const mailDataForReceiver = { ...baseMailData, read: false };
-      await fetch(
-        `https://mail-box-client-59016-default-rtdb.firebaseio.com/mails/${cleanReceiverEmail}/inbox.json`,
-        {
-          method: "POST",
-          body: JSON.stringify(mailDataForReceiver),
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
+      await sendMail({ to, subject, message });
       toast.success("✅ Mail sent successfully!");
 
       setTo("");
       setSubject("");
       setMessage("");
 
-      setTimeout(() => navigate("/mailbox"), 1000);
+      setTimeout(() => navigate("/mailbox"), 800);
     } catch (error) {
       console.error("Error sending mail:", error);
       toast.error("❌ Failed to send mail. Try again later.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
