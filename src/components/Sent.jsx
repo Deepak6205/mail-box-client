@@ -1,51 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal, Button, Spinner } from "react-bootstrap";
 import { toast } from "react-toastify";
 import "./Sent.css";
+import { useMailFolder } from "../hooks/useMailApi";
 
 export default function Sent() {
-  const [sentEmails, setSentEmails] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { mails: sentEmails, loading, deleteMail: deleteSentMail } = useMailFolder("sent");
   const [selectedMail, setSelectedMail] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchSent = async () => {
-      const userEmail = localStorage.getItem("userEmail");
-      if (!userEmail) {
-        alert("Please login first!");
-        navigate("/signin");
-        return;
-      }
-      const cleanEmail = userEmail.replace(/\./g, "_");
-
-      try {
-        const res = await fetch(
-          `https://mail-box-client-59016-default-rtdb.firebaseio.com/mails/${cleanEmail}/sent.json`
-        );
-        const data = res.ok ? await res.json() : null;
-        if (!data) {
-          setSentEmails([]);
-          return;
-        }
-        const list = Array.isArray(data)
-          ? data.map((v, i) => ({ id: v?.id ?? i, read: v?.read ?? true, ...(v || {}) }))
-          : Object.entries(data).map(([k, v]) => ({ id: k, read: v?.read ?? true, ...v }));
-        list.sort((a, b) => (b.timestamp ? new Date(b.timestamp).getTime() : 0) - (a.timestamp ? new Date(a.timestamp).getTime() : 0));
-        setSentEmails(list);
-      } catch (err) {
-        console.error("Error loading sent:", err);
-        setSentEmails([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSent();
-  }, [navigate]);
 
   const openMail = (mail) => {
     setSelectedMail(mail);
@@ -56,28 +21,16 @@ export default function Sent() {
     setSelectedMail(null);
   };
 
- 
-  const deleteSentMail = async (mailId) => {
+  const handleDelete = async (mailId) => {
     if (!window.confirm("Delete this sent message? This cannot be undone.")) return;
-    const userEmail = localStorage.getItem("userEmail");
-    if (!userEmail) {
-      toast.error("Please login first.");
-      return;
-    }
-    const cleanEmail = userEmail.replace(/\./g, "_");
     try {
       setDeletingId(mailId);
-      const res = await fetch(
-        `https://mail-box-client-59016-default-rtdb.firebaseio.com/mails/${cleanEmail}/sent/${mailId}.json`,
-        { method: "DELETE" }
-      );
-      if (!res.ok) throw new Error("Delete failed");
-      setSentEmails((prev) => prev.filter((m) => m.id !== mailId));
+      await deleteSentMail(mailId);
+      toast.success("Sent message deleted.");
       if (selectedMail?.id === mailId) {
         setShowModal(false);
         setSelectedMail(null);
       }
-      toast.success("Sent message deleted.");
     } catch (err) {
       console.error("Delete sent error:", err);
       toast.error("Failed to delete sent message.");
@@ -131,15 +84,13 @@ export default function Sent() {
                       <div className="mail-to text-muted">To: {mail.to}</div>
                     </div>
                     <div className="mail-meta text-muted text-end">
-                      <div className="small">
-                        {mail.timestamp ? new Date(mail.timestamp).toLocaleString() : ""}
-                      </div>
+                      <div className="small">{mail.timestamp ? new Date(mail.timestamp).toLocaleString() : ""}</div>
                       <div style={{ marginTop: 6 }}>
                         <button
                           className="btn btn-sm btn-outline-danger"
                           onClick={(e) => {
                             e.stopPropagation();
-                            deleteSentMail(mail.id);
+                            handleDelete(mail.id);
                           }}
                           disabled={deletingId === mail.id}
                           title="Delete"
@@ -152,7 +103,11 @@ export default function Sent() {
 
                   <div
                     className="mail-snippet text-muted mt-2"
-                    dangerouslySetInnerHTML={{ __html: (mail.message ? mail.message.slice(0, 140) : "") + (mail.message && mail.message.length > 140 ? "..." : "") }}
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        (mail.message ? mail.message.slice(0, 140) : "") +
+                        (mail.message && mail.message.length > 140 ? "..." : ""),
+                    }}
                   />
                 </div>
               </div>
@@ -169,9 +124,7 @@ export default function Sent() {
           <div className="mb-2 text-muted small">
             <strong>From:</strong> {selectedMail?.from} &nbsp;•&nbsp; <strong>To:</strong> {selectedMail?.to}
           </div>
-          <div className="mb-3 text-muted small">
-            {selectedMail?.timestamp ? new Date(selectedMail.timestamp).toLocaleString() : ""}
-          </div>
+          <div className="mb-3 text-muted small">{selectedMail?.timestamp ? new Date(selectedMail.timestamp).toLocaleString() : ""}</div>
           <hr />
           <div className="mail-full" dangerouslySetInnerHTML={{ __html: selectedMail?.message || "<i>No content</i>" }} />
         </Modal.Body>
@@ -183,7 +136,7 @@ export default function Sent() {
             variant="danger"
             onClick={async () => {
               if (!selectedMail) return;
-              await deleteSentMail(selectedMail.id);
+              await handleDelete(selectedMail.id);
             }}
             disabled={deletingId === selectedMail?.id}
           >
